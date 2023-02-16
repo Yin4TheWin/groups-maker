@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <div class="center-text">
+            <h1>Random Groups Maker</h1>
+            <p>Create random groups with your friends without the hassle of doing it live. Simply enter a group code (or create one) to get started.</p>
+            <hr>
+            <form class="form-inline" id="makegroup">
+                <input type="text" id="makegroupid" placeholder="group code">
+                <button type="submit">Create group</button>
+            </form>
+            <form class="form-inline" id="findgroup">
+                <input type="text" id="findgroupid" placeholder="group code">
+                <button>Search for group</button>
+            </form>
+        </div>
+        <script type="module">
+            // Import the functions you need from the SDKs you need
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+            import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+            // TODO: Add SDKs for Firebase products that you want to use
+            // https://firebase.google.com/docs/web/setup#available-libraries
+          
+            // Your web app's Firebase configuration
+            const firebaseConfig = {
+              apiKey: "AIzaSyAGwytvuakWiv07utmH9ey0jlniTlHt3j4",
+              authDomain: "group-project-maker.firebaseapp.com",
+              projectId: "group-project-maker",
+              storageBucket: "group-project-maker.appspot.com",
+              messagingSenderId: "822464610276",
+              appId: "1:822464610276:web:1dd836e280950eff3311f1",
+              databaseURL: "https://group-project-maker-default-rtdb.firebaseio.com"
+            };
+          
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+
+            document.getElementById('makegroup').addEventListener('submit', createGroup);
+            document.getElementById('findgroup').addEventListener('submit', goToGroup);
+
+            function createGroup(e) {
+                e.preventDefault();
+    
+                // Get values
+                let id = document.getElementById('makegroupid').value
+                if(id!==""){
+                    get(child(ref(db), `groups/${id}`)).then((snapshot)=>{
+                        if(snapshot.exists()){
+                            alert("Group with this name already exists!")
+                        }
+                        else{
+                            set(ref(db, `groups/${id}`), {created: Date.now()}).then(()=>{
+                                let owners=localStorage.getItem('myRooms')?localStorage.getItem('myRooms'):[]
+                                localStorage.setItem('myRooms', [...owners, id])
+                                alert("Room was created successfully!")
+                                document.getElementById('makegroup').reset();
+                            }).catch(err=>{
+                                alert(err.message)
+                            })
+                        }
+                    }).catch((err)=>{
+                        alert(err.message)
+                    })
+                } else{
+                    alert("Please enter a group code")
+                }
+            }
+
+            function goToGroup(e) {
+                e.preventDefault();
+    
+                // Get values
+                let id = document.getElementById('findgroupid').value
+
+                if(id!==""){
+                    get(child(ref(db), `groups/${id}`)).then((snapshot)=>{
+                        if(snapshot.exists()){
+                            alert("Group with this name already exists!")
+                        }
+                        else{
+                            alert("This group does not exist yet, please create it first.")
+                        }
+                    }).catch((err)=>{
+                        alert(err.message)
+                    })
+                    document.getElementById('findgroup').reset();
+                } else{
+                    alert("Please enter a group code")
+                }
+            }
+          </script>
+    </body>
+</html>
